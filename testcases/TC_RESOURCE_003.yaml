@@ -1,0 +1,53 @@
+version: "1.0"
+
+testcase:
+  id: TC_RESOURCE_003
+  name: Linux存储与内存资源检查
+  description: 检查磁盘、内存和块设备信息，全程只读。
+
+target:
+  connection:
+    type: ssh
+
+steps:
+  - id: 1
+    role: verify
+    name: 检查文件系统使用率
+    action:
+      type: shell
+      command: df -hT
+    expected:
+      exit_code: 0
+      stdout_contains:
+        - Filesystem
+    evidence:
+      capture: true
+      trigger: command_complete
+
+  - id: 2
+    role: verify
+    name: 检查内存使用情况
+    action:
+      type: shell
+      command: free -h
+    expected:
+      exit_code: 0
+      stdout_contains:
+        - Mem
+    evidence:
+      capture: true
+      trigger: command_complete
+
+  - id: 3
+    role: verify
+    name: 检查块设备
+    action:
+      type: shell
+      command: lsblk -o NAME,SIZE,TYPE,MOUNTPOINTS
+    expected:
+      exit_code: 0
+      stdout_contains:
+        - NAME
+    evidence:
+      capture: true
+      trigger: command_complete

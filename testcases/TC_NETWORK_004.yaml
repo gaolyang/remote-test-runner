@@ -1,0 +1,50 @@
+version: "1.0"
+
+testcase:
+  id: TC_NETWORK_004
+  name: Linux网络状态检查
+  description: 检查接口地址、路由和监听端口，全程只读。
+
+target:
+  connection:
+    type: ssh
+
+steps:
+  - id: 1
+    role: verify
+    name: 检查网络接口地址
+    action:
+      type: shell
+      command: ip -br addr
+    expected:
+      exit_code: 0
+      stdout_empty: false
+    evidence:
+      capture: true
+      trigger: command_complete
+
+  - id: 2
+    role: verify
+    name: 检查路由表
+    action:
+      type: shell
+      command: ip route
+    expected:
+      exit_code: 0
+    evidence:
+      capture: true
+      trigger: command_complete
+
+  - id: 3
+    role: verify
+    name: 检查TCP监听端口
+    action:
+      type: shell
+      command: ss -lnt
+    expected:
+      exit_code: 0
+      stdout_contains:
+        - State
+    evidence:
+      capture: true
+      trigger: command_complete

@@ -1,0 +1,61 @@
+version: "1.0"
+
+testcase:
+  id: TC_SYSTEM_002
+  name: Linux系统基础状态检查
+  description: 检查主机名、当前时间、运行时长和登录用户，全程只读。
+
+target:
+  connection:
+    type: ssh
+
+steps:
+  - id: 1
+    role: setup
+    name: 确认当前用户
+    action:
+      type: shell
+      command: whoami
+    expected:
+      exit_code: 0
+    evidence:
+      capture: false
+
+  - id: 2
+    role: verify
+    name: 检查主机名
+    action:
+      type: shell
+      command: hostname
+    expected:
+      exit_code: 0
+      stdout_empty: false
+    evidence:
+      capture: true
+      trigger: command_complete
+
+  - id: 3
+    role: verify
+    name: 检查系统时间
+    action:
+      type: shell
+      command: date '+%F %T %Z'
+    expected:
+      exit_code: 0
+      stdout_empty: false
+    evidence:
+      capture: true
+      trigger: command_complete
+
+  - id: 4
+    role: verify
+    name: 检查系统运行时长
+    action:
+      type: shell
+      command: uptime
+    expected:
+      exit_code: 0
+    evidence:
+      capture: true
+      trigger: command_complete
+

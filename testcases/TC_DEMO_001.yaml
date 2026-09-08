@@ -1,0 +1,61 @@
+version: "1.0"
+
+testcase:
+  id: TC_DEMO_001
+  name: FusionOS基础环境检查
+  description: >
+    验证目标 FusionOS 服务器的当前用户、系统版本、内核版本和网络信息。
+
+target:
+  connection:
+    type: ssh
+
+steps:
+  - id: 1
+    role: setup
+    name: 检查当前用户
+    action:
+      type: shell
+      command: whoami
+    expected:
+      exit_code: 0
+    evidence:
+      capture: false
+
+  - id: 2
+    role: verify
+    name: 查看操作系统版本
+    action:
+      type: shell
+      command: cat /etc/os-release
+    expected:
+      exit_code: 0
+      stdout_contains:
+        - FusionOS
+    evidence:
+      capture: true
+      trigger: command_complete
+
+  - id: 3
+    role: verify
+    name: 查看内核版本
+    action:
+      type: shell
+      command: uname -a
+    expected:
+      exit_code: 0
+    evidence:
+      capture: true
+      trigger: command_complete
+
+  - id: 4
+    role: verify
+    name: 查看IP地址
+    action:
+      type: shell
+      command: ip addr
+    expected:
+      exit_code: 0
+    evidence:
+      capture: true
+      trigger: command_complete
