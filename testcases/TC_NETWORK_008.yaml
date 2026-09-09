@@ -1,0 +1,65 @@
+version: '1.0'
+testcase:
+  id: TC_NETWORK_008
+  name: 查看监听端口与网络连通性
+  description: ''
+target:
+  connection:
+    type: ssh
+steps:
+- id: 1
+  role: verify
+  name: 查看 TCP 监听端口
+  action:
+    type: shell
+    command: ss -lnt
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出表头含 State / Local Address:Port，SSH 22 端口处于 LISTEN 状态
+    - 2. 输出 UDP 监听列表，无报错
+    - 3. 输出中包含 users:(("进程名"))，端口与进程对应正确
+    - 4. 域名解析成功且收到回复，丢包率 0%
+    - 若隔离环境则明确返回无法访问，属预期
+- id: 2
+  role: verify
+  name: 查看 UDP 监听端口
+  action:
+    type: shell
+    command: ss -lnu
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出表头含 State / Local Address:Port，SSH 22 端口处于 LISTEN 状态
+    - 2. 输出 UDP 监听列表，无报错
+    - 3. 输出中包含 users:(("进程名"))，端口与进程对应正确
+    - 4. 域名解析成功且收到回复，丢包率 0%
+    - 若隔离环境则明确返回无法访问，属预期
+- id: 3
+  role: verify
+  name: 查看端口对应进程
+  action:
+    type: shell
+    command: ss -lntp
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出表头含 State / Local Address:Port，SSH 22 端口处于 LISTEN 状态
+    - 2. 输出 UDP 监听列表，无报错
+    - 3. 输出中包含 users:(("进程名"))，端口与进程对应正确
+    - 4. 域名解析成功且收到回复，丢包率 0%
+    - 若隔离环境则明确返回无法访问，属预期
+- id: 4
+  role: verify
+  name: 测试域名解析与外网访问
+  action:
+    type: shell
+    command: ping -c 4 www.baidu.com
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出表头含 State / Local Address:Port，SSH 22 端口处于 LISTEN 状态
+    - 2. 输出 UDP 监听列表，无报错
+    - 3. 输出中包含 users:(("进程名"))，端口与进程对应正确
+    - 4. 域名解析成功且收到回复，丢包率 0%
+    - 若隔离环境则明确返回无法访问，属预期

@@ -1,4 +1,4 @@
-from backend.testcase.models import EvidencePolicy, Step, StepRole
+from backend.testcase.models import EvidencePolicy, InteractionPolicy, Step, StepRole
 
 
 def make_step(role: StepRole, evidence: EvidencePolicy | None = None) -> Step:
@@ -27,3 +27,16 @@ def test_explicit_policy_wins() -> None:
     policy = make_step(StepRole.VERIFY, EvidencePolicy(capture=False)).resolved_evidence()
     assert policy.capture is False
 
+
+def test_interactive_step_accepts_manual_policy() -> None:
+    step = Step.model_validate(
+        {
+            "id": 2,
+            "role": "verify",
+            "name": "interactive installer",
+            "action": {"type": "shell", "command": "./install.sh"},
+            "interaction": {"mode": "manual", "instructions": "Choose the installation mode", "timeout": 900},
+        }
+    )
+    assert isinstance(step.interaction, InteractionPolicy)
+    assert step.interaction.timeout == 900

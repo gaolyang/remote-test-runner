@@ -1,0 +1,65 @@
+version: '1.0'
+testcase:
+  id: TC_NETWORK_006
+  name: 查看网络接口与 IP 地址
+  description: ''
+target:
+  connection:
+    type: ssh
+steps:
+- id: 1
+  role: verify
+  name: 以简洁格式查看所有网卡地址
+  action:
+    type: shell
+    command: ip -br addr
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出每个接口的名称、状态（UP/DOWN）与 IP 地址，内容非空
+    - 2. 输出 inet / inet6 / link/ether 等字段，MAC 地址格式正确
+    - 3. 输出该接口的 IPv4 地址，与规划地址一致
+    - 若接口不存在则提示 Device does not exist
+    - 4. 输出 RX/TX 收发包与错误统计，errors 与 dropped 无明显增长
+- id: 2
+  role: verify
+  name: 查看详细接口信息
+  action:
+    type: shell
+    command: ip addr show
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出每个接口的名称、状态（UP/DOWN）与 IP 地址，内容非空
+    - 2. 输出 inet / inet6 / link/ether 等字段，MAC 地址格式正确
+    - 3. 输出该接口的 IPv4 地址，与规划地址一致
+    - 若接口不存在则提示 Device does not exist
+    - 4. 输出 RX/TX 收发包与错误统计，errors 与 dropped 无明显增长
+- id: 3
+  role: verify
+  name: 查看指定接口（如 eth0）地址
+  action:
+    type: shell
+    command: ip addr show dev eth0
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出每个接口的名称、状态（UP/DOWN）与 IP 地址，内容非空
+    - 2. 输出 inet / inet6 / link/ether 等字段，MAC 地址格式正确
+    - 3. 输出该接口的 IPv4 地址，与规划地址一致
+    - 若接口不存在则提示 Device does not exist
+    - 4. 输出 RX/TX 收发包与错误统计，errors 与 dropped 无明显增长
+- id: 4
+  role: verify
+  name: 查看接口统计与丢包
+  action:
+    type: shell
+    command: ip -s link
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出每个接口的名称、状态（UP/DOWN）与 IP 地址，内容非空
+    - 2. 输出 inet / inet6 / link/ether 等字段，MAC 地址格式正确
+    - 3. 输出该接口的 IPv4 地址，与规划地址一致
+    - 若接口不存在则提示 Device does not exist
+    - 4. 输出 RX/TX 收发包与错误统计，errors 与 dropped 无明显增长

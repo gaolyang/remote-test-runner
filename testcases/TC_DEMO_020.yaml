@@ -1,0 +1,79 @@
+version: '1.0'
+testcase:
+  id: TC_DEMO_020
+  name: FusionOS 基础环境一键冒烟检查
+  description: ''
+target:
+  connection:
+    type: ssh
+steps:
+- id: 1
+  role: verify
+  name: 确认当前用户
+  action:
+    type: shell
+    command: whoami
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. ，返回预期账号
+    - 2. 输出包含 FusionOS 及版本号
+    - 3. 输出内核版本与架构信息，内容完整
+    - 4. 输出各网卡 IP，管理网口地址正确
+    - 5. 磁盘与内存数据正常返回，无报错
+- id: 2
+  role: verify
+  name: 查看系统版本
+  action:
+    type: shell
+    command: cat /etc/os-release
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. ，返回预期账号
+    - 2. 输出包含 FusionOS 及版本号
+    - 3. 输出内核版本与架构信息，内容完整
+    - 4. 输出各网卡 IP，管理网口地址正确
+    - 5. 磁盘与内存数据正常返回，无报错
+- id: 3
+  role: verify
+  name: 查看内核版本
+  action:
+    type: shell
+    command: uname -a
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. ，返回预期账号
+    - 2. 输出包含 FusionOS 及版本号
+    - 3. 输出内核版本与架构信息，内容完整
+    - 4. 输出各网卡 IP，管理网口地址正确
+    - 5. 磁盘与内存数据正常返回，无报错
+- id: 4
+  role: verify
+  name: 查看 IP 地址
+  action:
+    type: shell
+    command: ip -br addr
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. ，返回预期账号
+    - 2. 输出包含 FusionOS 及版本号
+    - 3. 输出内核版本与架构信息，内容完整
+    - 4. 输出各网卡 IP，管理网口地址正确
+    - 5. 磁盘与内存数据正常返回，无报错
+- id: 5
+  role: verify
+  name: 查看磁盘与内存
+  action:
+    type: shell
+    command: df -hT && free -h
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. ，返回预期账号
+    - 2. 输出包含 FusionOS 及版本号
+    - 3. 输出内核版本与架构信息，内容完整
+    - 4. 输出各网卡 IP，管理网口地址正确
+    - 5. 磁盘与内存数据正常返回，无报错

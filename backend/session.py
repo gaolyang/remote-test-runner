@@ -36,6 +36,7 @@ class RuntimeSession:
     abort_event: asyncio.Event = field(default_factory=asyncio.Event)
     render_acks: dict[str, asyncio.Event] = field(default_factory=dict)
     command_confirmations: dict[str, asyncio.Event] = field(default_factory=dict)
+    interaction_confirmations: dict[str, asyncio.Event] = field(default_factory=dict)
     subscribers: set[asyncio.Queue[dict[str, Any]]] = field(default_factory=set)
     ssh: Any = field(default=None, repr=False)
     task: asyncio.Task[None] | None = field(default=None, repr=False)
@@ -74,6 +75,13 @@ class RuntimeSession:
         event.set()
         return True
 
+    def complete_interaction(self, step_id: str) -> bool:
+        event = self.interaction_confirmations.get(step_id)
+        if event is None:
+            return False
+        event.set()
+        return True
+
     def snapshot(self, include_transcript: bool = True) -> dict[str, Any]:
         step = None
         if 0 <= self.current_step_index < len(self.testcase.steps):
@@ -83,6 +91,7 @@ class RuntimeSession:
                 "name": current.name,
                 "role": current.role.value,
                 "expected": current.expected.model_dump(),
+                "interaction": current.interaction.model_dump() if current.interaction else None,
             }
         step_items: list[dict[str, Any]] = []
         results_by_id = {str(item["id"]): item for item in self.step_results}

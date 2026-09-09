@@ -1,0 +1,61 @@
+version: '1.0'
+testcase:
+  id: TC_SYSTEM_003
+  name: 查看主机名与系统启动时间
+  description: ''
+target:
+  connection:
+    type: ssh
+steps:
+- id: 1
+  role: verify
+  name: 查看当前主机名
+  action:
+    type: shell
+    command: hostname
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出主机名字符串，内容非空且无空格
+    - 2. 文件内容与 hostname 命令输出完全一致
+    - 3. 输出 up xx days / load average 三项负载值，数值合理
+    - 4. 输出 system boot 的具体日期时间，且与 uptime 推算的启动时间相符
+- id: 2
+  role: verify
+  name: 查看主机名配置文件
+  action:
+    type: shell
+    command: cat /etc/hostname
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出主机名字符串，内容非空且无空格
+    - 2. 文件内容与 hostname 命令输出完全一致
+    - 3. 输出 up xx days / load average 三项负载值，数值合理
+    - 4. 输出 system boot 的具体日期时间，且与 uptime 推算的启动时间相符
+- id: 3
+  role: verify
+  name: 查看系统运行时长与负载
+  action:
+    type: shell
+    command: uptime
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出主机名字符串，内容非空且无空格
+    - 2. 文件内容与 hostname 命令输出完全一致
+    - 3. 输出 up xx days / load average 三项负载值，数值合理
+    - 4. 输出 system boot 的具体日期时间，且与 uptime 推算的启动时间相符
+- id: 4
+  role: verify
+  name: 查看本次启动时间
+  action:
+    type: shell
+    command: who -b
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出主机名字符串，内容非空且无空格
+    - 2. 文件内容与 hostname 命令输出完全一致
+    - 3. 输出 up xx days / load average 三项负载值，数值合理
+    - 4. 输出 system boot 的具体日期时间，且与 uptime 推算的启动时间相符

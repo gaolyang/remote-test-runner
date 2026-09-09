@@ -1,0 +1,61 @@
+version: '1.0'
+testcase:
+  id: TC_FILE_018
+  name: 文件的创建、写入与删除
+  description: ''
+target:
+  connection:
+    type: ssh
+steps:
+- id: 1
+  role: verify
+  name: 进入临时目录
+  action:
+    type: shell
+    command: cd /tmp
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 命令成功执行，当前工作目录切换为 /tmp
+    - 2. 文件创建成功，无权限或只读文件系统报错
+    - 3. 输出内容 fusionos test，文件属主与权限（-rw-r--r--）正确
+    - 4. 文件被删除，再次 ls 提示 No such file or directory
+- id: 2
+  role: verify
+  name: 创建测试文件
+  action:
+    type: shell
+    command: echo 'fusionos test' > test_case.txt
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 命令成功执行，当前工作目录切换为 /tmp
+    - 2. 文件创建成功，无权限或只读文件系统报错
+    - 3. 输出内容 fusionos test，文件属主与权限（-rw-r--r--）正确
+    - 4. 文件被删除，再次 ls 提示 No such file or directory
+- id: 3
+  role: verify
+  name: 查看文件内容与属性
+  action:
+    type: shell
+    command: cat test_case.txt && ls -l test_case.txt
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 命令成功执行，当前工作目录切换为 /tmp
+    - 2. 文件创建成功，无权限或只读文件系统报错
+    - 3. 输出内容 fusionos test，文件属主与权限（-rw-r--r--）正确
+    - 4. 文件被删除，再次 ls 提示 No such file or directory
+- id: 4
+  role: verify
+  name: 删除测试文件并确认
+  action:
+    type: shell
+    command: rm -f test_case.txt && ls test_case.txt
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 命令成功执行，当前工作目录切换为 /tmp
+    - 2. 文件创建成功，无权限或只读文件系统报错
+    - 3. 输出内容 fusionos test，文件属主与权限（-rw-r--r--）正确
+    - 4. 文件被删除，再次 ls 提示 No such file or directory

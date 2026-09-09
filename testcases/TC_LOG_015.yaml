@@ -1,0 +1,65 @@
+version: '1.0'
+testcase:
+  id: TC_LOG_015
+  name: 查看系统日志与内核日志
+  description: ''
+target:
+  connection:
+    type: ssh
+steps:
+- id: 1
+  role: verify
+  name: 查看本次启动的 systemd 日志
+  action:
+    type: shell
+    command: journalctl -b --no-pager | head -50
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出本次启动后的日志条目，包含时间戳与单元名，无 I/O 报错
+    - 2. 输出内核启动与设备信息，无 OOM / I/O error 等关键字
+    - 3. 输出登录与 sudo 审计记录，无大量 Failed password
+    - 4. 输出 error 级别日志
+    - 若为空说明无错误，符合预期
+- id: 2
+  role: verify
+  name: 查看内核环形缓冲日志
+  action:
+    type: shell
+    command: dmesg | tail -30
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出本次启动后的日志条目，包含时间戳与单元名，无 I/O 报错
+    - 2. 输出内核启动与设备信息，无 OOM / I/O error 等关键字
+    - 3. 输出登录与 sudo 审计记录，无大量 Failed password
+    - 4. 输出 error 级别日志
+    - 若为空说明无错误，符合预期
+- id: 3
+  role: verify
+  name: 查看安全认证日志
+  action:
+    type: shell
+    command: tail -n 30 /var/log/secure
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出本次启动后的日志条目，包含时间戳与单元名，无 I/O 报错
+    - 2. 输出内核启动与设备信息，无 OOM / I/O error 等关键字
+    - 3. 输出登录与 sudo 审计记录，无大量 Failed password
+    - 4. 输出 error 级别日志
+    - 若为空说明无错误，符合预期
+- id: 4
+  role: verify
+  name: 按级别过滤错误日志
+  action:
+    type: shell
+    command: journalctl -p err -b --no-pager
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出本次启动后的日志条目，包含时间戳与单元名，无 I/O 报错
+    - 2. 输出内核启动与设备信息，无 OOM / I/O error 等关键字
+    - 3. 输出登录与 sudo 审计记录，无大量 Failed password
+    - 4. 输出 error 级别日志
+    - 若为空说明无错误，符合预期

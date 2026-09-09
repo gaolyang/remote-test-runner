@@ -8,86 +8,97 @@
   <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
-  <header class="topbar">
-    <div>
-      <h1>Remote Test Runner</h1>
-      <p>远程测试自动执行与证据采集系统</p>
+  <header class="app-chrome">
+    <div class="title-row">
+      <div class="app-mark">R</div><strong>Remote Test Runner</strong><span class="app-subtitle">SSH test console</span>
+      <span id="connection-badge" class="badge">未连接</span>
     </div>
-    <span id="connection-badge" class="badge">未连接</span>
+    <nav class="menu-row" aria-label="应用菜单"><span>Session</span><span>View</span><span>Test cases</span><span>Tools</span><span>Help</span></nav>
+    <div class="toolbar" aria-label="快捷工具栏">
+      <span class="tool-icon green">＋</span><span>New session</span><i></i>
+      <span class="tool-icon blue">▣</span><span>Test console</span><i></i>
+      <span class="tool-icon yellow">⇧</span><span>Evidence</span>
+    </div>
   </header>
 
   <main>
-    <section id="start-panel" class="panel start-panel">
-      <h2>启动测试</h2>
-      <form id="start-form">
-        <label>测试案例
-          <select id="testcase" name="testcase" required></select>
-        </label>
-        <label>目标主机
-          <input id="host" name="host" placeholder="192.168.10.20" required autocomplete="off">
-        </label>
-        <label>端口
-          <input id="port" name="port" type="number" value="22" min="1" max="65535" required>
-        </label>
-        <label>SSH 用户名
-          <input id="username" name="username" value="root" required autocomplete="username">
-        </label>
-        <label>SSH 密码（仅保存在运行内存）
-          <input id="password" name="password" type="password" autocomplete="current-password">
-        </label>
-        <label>私钥路径（可选，控制端本地路径）
-          <input id="key-filename" name="key_filename" placeholder="C:\\Users\\me\\.ssh\\id_ed25519" autocomplete="off">
-        </label>
-        <button id="start-button" type="submit" class="primary">Start Test</button>
-      </form>
-      <p id="form-error" class="error" role="alert"></p>
-    </section>
-
-    <section id="runner-panel" class="runner-grid hidden">
-      <aside class="panel sidebar">
-        <h2>Steps</h2>
-        <ol id="step-list"></ol>
+    <section id="start-panel" class="start-layout">
+      <aside class="session-tree">
+        <div class="pane-title">USER SESSIONS</div>
+        <ul>
+          <li class="tree-root"><span>⌄</span> Remote hosts</li>
+          <li class="tree-child active"><span class="computer-dot"></span> New SSH session</li>
+          <li class="tree-root"><span>⌄</span> Test cases</li>
+          <li class="tree-child"><span class="file-dot"></span> YAML library</li>
+        </ul>
+        <div class="import-box">
+          <strong>Import test cases</strong>
+          <p>Excel 中至少包含“测试名称”和“测试执行步骤”两列。</p>
+          <input id="case-file" type="file" accept=".xlsx,.xlsm,.csv">
+          <label class="overwrite-row"><input id="overwrite-cases" type="checkbox" checked> 同编号时更新（自动备份原 YAML）</label>
+          <button id="import-button" type="button">导入 Excel / CSV</button>
+          <p id="import-message" class="small-message" role="status"></p>
+        </div>
       </aside>
 
-      <div class="workspace">
-        <section class="panel summary">
-          <div><span>Case</span><strong id="case-summary">—</strong></div>
-          <div><span>Target</span><strong id="target-summary">—</strong></div>
-          <div><span>Status</span><strong id="status-summary">—</strong></div>
-          <div><span>Progress</span><strong id="progress-summary">—</strong></div>
-          <p id="status-message"></p>
-        </section>
+      <section class="start-workspace">
+        <div class="terminal-tabbar"><span class="tab active">New SSH session <b>×</b></span><button aria-label="新建标签">＋</button></div>
+        <div class="connection-dialog">
+          <div class="dialog-title"><span class="computer-dot"></span> SSH session settings</div>
+          <form id="start-form">
+            <label class="wide">测试案例<select id="testcase" name="testcase" required></select></label>
+            <label class="wide">目标主机<input id="host" name="host" placeholder="192.168.10.20" required autocomplete="off"></label>
+            <label>端口<input id="port" name="port" type="number" value="22" min="1" max="65535" required></label>
+            <label>SSH 用户名<input id="username" name="username" value="root" required autocomplete="username"></label>
+            <label class="wide">SSH 密码（仅保存在运行内存）<input id="password" name="password" type="password" autocomplete="current-password"></label>
+            <label class="wide">私钥路径（可选）<input id="key-filename" name="key_filename" placeholder="C:\\Users\\me\\.ssh\\id_ed25519" autocomplete="off"></label>
+            <div class="dialog-actions wide"><span id="form-error" class="error" role="alert"></span><button id="start-button" type="submit" class="primary">OK · Start Test</button></div>
+          </form>
+        </div>
+      </section>
+    </section>
 
-        <section id="evidence-area" class="panel evidence-area">
-          <div class="evidence-header">
-            <div><span>Case ID</span><strong id="evidence-case-id">—</strong></div>
-            <div><span>Case Name</span><strong id="evidence-case-name">—</strong></div>
-            <div><span>Target Host</span><strong id="evidence-target">—</strong></div>
-            <div><span>Step</span><strong id="evidence-step">—</strong></div>
-            <div><span>Timestamp</span><strong id="evidence-time">—</strong></div>
-          </div>
+    <section id="runner-panel" class="runner-layout hidden">
+      <aside class="session-tree runner-tree"><div class="pane-title">TEST STEPS</div><ol id="step-list"></ol></aside>
+      <div class="workspace">
+        <div class="terminal-tabbar">
+          <span class="tab active"><i class="status-led"></i><span id="case-summary">Test session</span><b>×</b></span>
+          <button aria-label="新建标签">＋</button><span id="status-message" class="tab-status"></span>
+        </div>
+        <section class="summary-strip">
+          <div><span>REMOTE HOST</span><strong id="target-summary">—</strong></div>
+          <div><span>STATUS</span><strong id="status-summary">—</strong></div>
+          <div><span>PROGRESS</span><strong id="progress-summary">—</strong></div>
+        </section>
+        <section id="evidence-area" class="evidence-area">
+          <div class="moba-banner"><div class="banner-box">
+            <strong>? Remote Test Runner ?</strong><span>(SSH test console and evidence collector)</span>
+            <p>› SSH session to <b id="evidence-target">—</b></p>
+            <p>› Test case <b id="evidence-case-id">—</b> · <span id="evidence-case-name">—</span></p>
+          </div></div>
+          <div class="evidence-meta"><span>STEP <b id="evidence-step">—</b></span><span>TIME <b id="evidence-time">—</b></span></div>
           <div id="terminal" aria-label="SSH terminal"></div>
           <pre id="terminal-fallback" class="terminal-fallback hidden"></pre>
           <div class="evidence-footer">
-            <div><span>Expected</span><strong id="evidence-expected">—</strong></div>
-            <div><span>Result</span><strong id="evidence-result">—</strong></div>
+            <div><span>EXPECTED</span><strong id="evidence-expected">—</strong></div>
+            <div><span>RESULT</span><strong id="evidence-result">—</strong></div>
           </div>
         </section>
-
+        <section id="interaction-bar" class="interaction-bar hidden" role="status">
+          <div><strong>此步骤需要人工交互</strong><span id="interaction-message">请在上方终端完成操作。</span></div>
+          <button id="interaction-button" type="button">完成交互并继续</button>
+        </section>
         <section id="controls" class="controls">
-          <button id="capture-button" type="button">Capture Evidence</button>
-          <button id="confirm-button" type="button" class="warning" disabled>Confirm Risk &amp; Run</button>
-          <button id="abort-button" type="button" class="danger">Abort</button>
-          <span id="action-message"></span>
+          <button id="capture-button" type="button">Capture evidence</button>
+          <button id="confirm-button" type="button" class="warning" disabled>Confirm risk &amp; run</button>
+          <button id="abort-button" type="button" class="danger">Abort</button><span id="action-message"></span>
         </section>
       </div>
     </section>
   </main>
-
+  <footer class="statusbar"><span>Remote Test Runner 0.2</span><span>SSH browser terminal</span><span>UTF-8</span></footer>
   <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.min.js"></script>
-  <script src="/assets/terminal.js"></script>
-  <script src="/assets/app.js"></script>
+  <script src="/assets/terminal.js"></script><script src="/assets/app.js"></script>
 </body>
 </html>
-

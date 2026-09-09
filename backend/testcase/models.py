@@ -19,6 +19,7 @@ class StepStatus(str, Enum):
     FAIL = "FAIL"
     ERROR = "ERROR"
     MANUAL_CONFIRM_REQUIRED = "MANUAL_CONFIRM_REQUIRED"
+    WAITING_FOR_OPERATOR = "WAITING_FOR_OPERATOR"
     SKIPPED = "SKIPPED"
 
 
@@ -41,6 +42,15 @@ class EvidencePolicy(BaseModel):
     trigger: Literal["command_complete", "manual"] | None = None
 
 
+class InteractionPolicy(BaseModel):
+    """Operator-assisted command execution in the shared SSH terminal."""
+
+    model_config = ConfigDict(extra="forbid")
+    mode: Literal["manual"] = "manual"
+    instructions: str = "请在终端中完成交互，然后点击“完成交互”。"
+    timeout: float = Field(default=600, gt=0, le=86400)
+
+
 class Step(BaseModel):
     model_config = ConfigDict(extra="forbid")
     id: int | str
@@ -49,6 +59,7 @@ class Step(BaseModel):
     action: Action
     expected: Expected = Field(default_factory=Expected)
     evidence: EvidencePolicy | None = None
+    interaction: InteractionPolicy | None = None
 
     def resolved_evidence(self) -> EvidencePolicy:
         default_capture = self.role == StepRole.VERIFY
@@ -95,4 +106,3 @@ class TestCase(BaseModel):
         if len(ids) != len(set(ids)):
             raise ValueError("step id must be unique within a test case")
         return steps
-

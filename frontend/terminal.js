@@ -18,8 +18,16 @@
       convertEol: false,
       fontFamily: "Cascadia Mono, Consolas, monospace",
       fontSize: 14,
+      lineHeight: 1.08,
       scrollback: 10000,
-      theme: { background: "#0b1020", foreground: "#d7e0f2", cursor: "#62d9ff" }
+      theme: {
+        background: "#000000", foreground: "#eeeeee", cursor: "#eeeeee",
+        black: "#000000", red: "#ff3b30", green: "#00e05a", yellow: "#fff200",
+        blue: "#2f80ff", magenta: "#ff42ff", cyan: "#00e5ff", white: "#e6e6e6",
+        brightBlack: "#777777", brightRed: "#ff6258", brightGreen: "#54ff7d",
+        brightYellow: "#ffff66", brightBlue: "#66a3ff", brightMagenta: "#ff7aff",
+        brightCyan: "#66f3ff", brightWhite: "#ffffff"
+      }
     });
     fitAddon = new window.FitAddon.FitAddon();
     terminal.loadAddon(fitAddon);
@@ -53,4 +61,3 @@
     fit: () => fitAddon && fitAddon.fit()
   };
 })();
-

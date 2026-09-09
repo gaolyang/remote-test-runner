@@ -45,13 +45,38 @@ chmod +x run.sh
 
 ## 5. 启动服务
 
-Windows：
+Windows 推荐直接双击项目根目录的 `start.bat`。它会：
+
+- 自动切换到项目目录；
+- 首次运行时创建 `.venv` 并安装缺失依赖；
+- 监听 `0.0.0.0:8000`，同时显示本机和局域网访问地址；
+- 在黑色窗口中持续显示 Uvicorn 请求日志和错误日志；
+- 按 `Ctrl+C` 时停止服务。
+
+默认访问地址通常是：
+
+```text
+本机：http://127.0.0.1:8000
+局域网：http://本机局域网IP:8000
+```
+
+需要更换端口时，在命令提示符中运行，例如：
+
+```bat
+start.bat 8001
+```
+
+也可以从 PowerShell 启动：
 
 ```powershell
 .\run.ps1
 ```
 
-`run.ps1` 会自动优先使用项目 `.venv`，不强制要求提前激活虚拟环境。
+`run.ps1` 使用项目 `.venv`；加 `-Bootstrap` 时会自动补齐环境和依赖：
+
+```powershell
+.\run.ps1 -HostAddress 0.0.0.0 -Port 8000 -Bootstrap
+```
 
 Linux：
 

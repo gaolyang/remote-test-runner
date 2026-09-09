@@ -1,0 +1,61 @@
+version: '1.0'
+testcase:
+  id: TC_SYSTEM_004
+  name: 查看系统时间与时区
+  description: ''
+target:
+  connection:
+    type: ssh
+steps:
+- id: 1
+  role: verify
+  name: 查看当前系统时间
+  action:
+    type: shell
+    command: date '+%F %T %Z'
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出格式正确（年-月-日 时:分:秒 时区），无报错
+    - 2. 输出 Local time / Universal time / Time zone，Time zone 为 Asia/Shanghai 或预期时区
+    - 3. 输出硬件时钟时间，与系统时间偏差在可接受范围内（秒级）
+    - 4. UTC 时间与本地时间相差 8 小时（东八区），时间逻辑一致
+- id: 2
+  role: verify
+  name: 查看时区与时钟同步状态
+  action:
+    type: shell
+    command: timedatectl
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出格式正确（年-月-日 时:分:秒 时区），无报错
+    - 2. 输出 Local time / Universal time / Time zone，Time zone 为 Asia/Shanghai 或预期时区
+    - 3. 输出硬件时钟时间，与系统时间偏差在可接受范围内（秒级）
+    - 4. UTC 时间与本地时间相差 8 小时（东八区），时间逻辑一致
+- id: 3
+  role: verify
+  name: 查看硬件时钟
+  action:
+    type: shell
+    command: hwclock --show
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出格式正确（年-月-日 时:分:秒 时区），无报错
+    - 2. 输出 Local time / Universal time / Time zone，Time zone 为 Asia/Shanghai 或预期时区
+    - 3. 输出硬件时钟时间，与系统时间偏差在可接受范围内（秒级）
+    - 4. UTC 时间与本地时间相差 8 小时（东八区），时间逻辑一致
+- id: 4
+  role: verify
+  name: 对比标准时间
+  action:
+    type: shell
+    command: date -u '+%F %T UTC'
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出格式正确（年-月-日 时:分:秒 时区），无报错
+    - 2. 输出 Local time / Universal time / Time zone，Time zone 为 Asia/Shanghai 或预期时区
+    - 3. 输出硬件时钟时间，与系统时间偏差在可接受范围内（秒级）
+    - 4. UTC 时间与本地时间相差 8 小时（东八区），时间逻辑一致

@@ -1,0 +1,61 @@
+version: '1.0'
+testcase:
+  id: TC_SEC_017
+  name: 查看防火墙与 SELinux 状态
+  description: ''
+target:
+  connection:
+    type: ssh
+steps:
+- id: 1
+  role: verify
+  name: 查看 firewalld 状态
+  action:
+    type: shell
+    command: systemctl status firewalld
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 active (running) 或按预期为 inactive，状态明确
+    - 2. 输出开放的服务与端口列表，22/tcp 在允许列表中
+    - 3. 返回 Enforcing / Permissive / Disabled 之一，与基线配置一致
+    - 4. 输出 SELinux status、Current mode、Policy 等信息，配置符合安全基线
+- id: 2
+  role: verify
+  name: 查看防火墙规则
+  action:
+    type: shell
+    command: firewall-cmd --list-all
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 active (running) 或按预期为 inactive，状态明确
+    - 2. 输出开放的服务与端口列表，22/tcp 在允许列表中
+    - 3. 返回 Enforcing / Permissive / Disabled 之一，与基线配置一致
+    - 4. 输出 SELinux status、Current mode、Policy 等信息，配置符合安全基线
+- id: 3
+  role: verify
+  name: 查看 SELinux 当前模式
+  action:
+    type: shell
+    command: getenforce
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 active (running) 或按预期为 inactive，状态明确
+    - 2. 输出开放的服务与端口列表，22/tcp 在允许列表中
+    - 3. 返回 Enforcing / Permissive / Disabled 之一，与基线配置一致
+    - 4. 输出 SELinux status、Current mode、Policy 等信息，配置符合安全基线
+- id: 4
+  role: verify
+  name: 查看 SELinux 详细状态
+  action:
+    type: shell
+    command: sestatus
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 active (running) 或按预期为 inactive，状态明确
+    - 2. 输出开放的服务与端口列表，22/tcp 在允许列表中
+    - 3. 返回 Enforcing / Permissive / Disabled 之一，与基线配置一致
+    - 4. 输出 SELinux status、Current mode、Policy 等信息，配置符合安全基线

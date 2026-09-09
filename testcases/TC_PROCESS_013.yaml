@@ -1,0 +1,61 @@
+version: '1.0'
+testcase:
+  id: TC_PROCESS_013
+  name: 查看进程状态与资源占用
+  description: ''
+target:
+  connection:
+    type: ssh
+steps:
+- id: 1
+  role: verify
+  name: 查看全部进程概况
+  action:
+    type: shell
+    command: ps aux
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 USER / PID / %CPU / %MEM / COMMAND 等字段，进程列表非空
+    - 2. 输出 %CPU 递减排列的前 5 个进程，无异常高占用进程
+    - 3. 输出 sshd 进程 PID 与完整命令行，进程处于运行状态
+    - 4. 输出层级化的进程树，1 号进程为 systemd（或 init）
+- id: 2
+  role: verify
+  name: 按 CPU 占用排序查看前 5 个进程
+  action:
+    type: shell
+    command: ps aux --sort=-%cpu | head -5
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 USER / PID / %CPU / %MEM / COMMAND 等字段，进程列表非空
+    - 2. 输出 %CPU 递减排列的前 5 个进程，无异常高占用进程
+    - 3. 输出 sshd 进程 PID 与完整命令行，进程处于运行状态
+    - 4. 输出层级化的进程树，1 号进程为 systemd（或 init）
+- id: 3
+  role: verify
+  name: 查看指定进程（如 sshd）
+  action:
+    type: shell
+    command: pgrep -a sshd
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 USER / PID / %CPU / %MEM / COMMAND 等字段，进程列表非空
+    - 2. 输出 %CPU 递减排列的前 5 个进程，无异常高占用进程
+    - 3. 输出 sshd 进程 PID 与完整命令行，进程处于运行状态
+    - 4. 输出层级化的进程树，1 号进程为 systemd（或 init）
+- id: 4
+  role: verify
+  name: 查看进程树
+  action:
+    type: shell
+    command: pstree -p | head -20
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 USER / PID / %CPU / %MEM / COMMAND 等字段，进程列表非空
+    - 2. 输出 %CPU 递减排列的前 5 个进程，无异常高占用进程
+    - 3. 输出 sshd 进程 PID 与完整命令行，进程处于运行状态
+    - 4. 输出层级化的进程树，1 号进程为 systemd（或 init）

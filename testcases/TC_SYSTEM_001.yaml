@@ -1,0 +1,61 @@
+version: '1.0'
+testcase:
+  id: TC_SYSTEM_001
+  name: 查看系统名称与发行版
+  description: ''
+target:
+  connection:
+    type: ssh
+steps:
+- id: 1
+  role: verify
+  name: 查看 FusionOS 发行版标识文件
+  action:
+    type: shell
+    command: cat /etc/fusionos-release
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 命令执行成功（），输出中包含 FusionOS 及具体版本号
+    - 2. 输出 NAME / VERSION / ID 等字段，ID 为 fusionos，版本与第 1 步一致
+    - 3. 输出 Operating System 字段显示 FusionOS，无 Permission denied 报错
+    - 4. 输出系统版本字符串，与前面步骤的版本信息一致
+- id: 2
+  role: verify
+  name: 查看标准 OS 版本信息
+  action:
+    type: shell
+    command: cat /etc/os-release
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 命令执行成功（），输出中包含 FusionOS 及具体版本号
+    - 2. 输出 NAME / VERSION / ID 等字段，ID 为 fusionos，版本与第 1 步一致
+    - 3. 输出 Operating System 字段显示 FusionOS，无 Permission denied 报错
+    - 4. 输出系统版本字符串，与前面步骤的版本信息一致
+- id: 3
+  role: verify
+  name: 查看系统静态信息（含操作系统名称）
+  action:
+    type: shell
+    command: hostnamectl
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 命令执行成功（），输出中包含 FusionOS 及具体版本号
+    - 2. 输出 NAME / VERSION / ID 等字段，ID 为 fusionos，版本与第 1 步一致
+    - 3. 输出 Operating System 字段显示 FusionOS，无 Permission denied 报错
+    - 4. 输出系统版本字符串，与前面步骤的版本信息一致
+- id: 4
+  role: verify
+  name: 查看 Red Hat 系兼容版本文件
+  action:
+    type: shell
+    command: cat /etc/redhat-release
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 命令执行成功（），输出中包含 FusionOS 及具体版本号
+    - 2. 输出 NAME / VERSION / ID 等字段，ID 为 fusionos，版本与第 1 步一致
+    - 3. 输出 Operating System 字段显示 FusionOS，无 Permission denied 报错
+    - 4. 输出系统版本字符串，与前面步骤的版本信息一致

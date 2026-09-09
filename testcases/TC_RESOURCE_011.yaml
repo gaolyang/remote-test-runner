@@ -1,0 +1,61 @@
+version: '1.0'
+testcase:
+  id: TC_RESOURCE_011
+  name: 查看 CPU 信息与系统负载
+  description: ''
+target:
+  connection:
+    type: ssh
+steps:
+- id: 1
+  role: verify
+  name: 查看 CPU 型号与核心数
+  action:
+    type: shell
+    command: lscpu
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 Architecture / CPU(s) / Model name 等字段，核数与设备规格一致
+    - 2. 输出逻辑 CPU 数量，与 lscpu 中 CPU(s) 一致
+    - 3. 输出 load average 与 %Cpu(s) 使用率，idle 值在合理范围
+    - 4. 输出 3 组采样数据，us/sy/id 之和约为 100，无持续 100% 占用
+- id: 2
+  role: verify
+  name: 查看 CPU 逻辑核数
+  action:
+    type: shell
+    command: nproc
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 Architecture / CPU(s) / Model name 等字段，核数与设备规格一致
+    - 2. 输出逻辑 CPU 数量，与 lscpu 中 CPU(s) 一致
+    - 3. 输出 load average 与 %Cpu(s) 使用率，idle 值在合理范围
+    - 4. 输出 3 组采样数据，us/sy/id 之和约为 100，无持续 100% 占用
+- id: 3
+  role: verify
+  name: 查看实时负载
+  action:
+    type: shell
+    command: top -bn1 | head -12
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 Architecture / CPU(s) / Model name 等字段，核数与设备规格一致
+    - 2. 输出逻辑 CPU 数量，与 lscpu 中 CPU(s) 一致
+    - 3. 输出 load average 与 %Cpu(s) 使用率，idle 值在合理范围
+    - 4. 输出 3 组采样数据，us/sy/id 之和约为 100，无持续 100% 占用
+- id: 4
+  role: verify
+  name: 查看 CPU 使用率统计
+  action:
+    type: shell
+    command: vmstat 1 3
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 Architecture / CPU(s) / Model name 等字段，核数与设备规格一致
+    - 2. 输出逻辑 CPU 数量，与 lscpu 中 CPU(s) 一致
+    - 3. 输出 load average 与 %Cpu(s) 使用率，idle 值在合理范围
+    - 4. 输出 3 组采样数据，us/sy/id 之和约为 100，无持续 100% 占用

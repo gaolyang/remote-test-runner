@@ -1,0 +1,61 @@
+version: '1.0'
+testcase:
+  id: TC_RESOURCE_012
+  name: 查看块设备与磁盘健康
+  description: ''
+target:
+  connection:
+    type: ssh
+steps:
+- id: 1
+  role: verify
+  name: 查看块设备与挂载点
+  action:
+    type: shell
+    command: lsblk -o NAME,SIZE,TYPE,MOUNTPOINTS
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 NAME / SIZE / TYPE / MOUNTPOINTS，系统盘挂载到 /
+    - 2. 输出 Disk 设备容量与分区列表，分区类型正确
+    - 3. 输出各分区的 UUID 与文件系统类型，与 /etc/fstab 配置一致
+    - 4. 输出读写速率与 %util，%util 未长期接近 100%
+- id: 2
+  role: verify
+  name: 查看磁盘分区表
+  action:
+    type: shell
+    command: fdisk -l
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 NAME / SIZE / TYPE / MOUNTPOINTS，系统盘挂载到 /
+    - 2. 输出 Disk 设备容量与分区列表，分区类型正确
+    - 3. 输出各分区的 UUID 与文件系统类型，与 /etc/fstab 配置一致
+    - 4. 输出读写速率与 %util，%util 未长期接近 100%
+- id: 3
+  role: verify
+  name: 查看设备 UUID
+  action:
+    type: shell
+    command: blkid
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 NAME / SIZE / TYPE / MOUNTPOINTS，系统盘挂载到 /
+    - 2. 输出 Disk 设备容量与分区列表，分区类型正确
+    - 3. 输出各分区的 UUID 与文件系统类型，与 /etc/fstab 配置一致
+    - 4. 输出读写速率与 %util，%util 未长期接近 100%
+- id: 4
+  role: verify
+  name: 查看磁盘 I/O 统计
+  action:
+    type: shell
+    command: iostat -x 1 2（或 vmstat -d）
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 NAME / SIZE / TYPE / MOUNTPOINTS，系统盘挂载到 /
+    - 2. 输出 Disk 设备容量与分区列表，分区类型正确
+    - 3. 输出各分区的 UUID 与文件系统类型，与 /etc/fstab 配置一致
+    - 4. 输出读写速率与 %util，%util 未长期接近 100%

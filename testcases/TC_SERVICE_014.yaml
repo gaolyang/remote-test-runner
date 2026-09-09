@@ -1,0 +1,65 @@
+version: '1.0'
+testcase:
+  id: TC_SERVICE_014
+  name: 查看系统服务运行状态
+  description: ''
+target:
+  connection:
+    type: ssh
+steps:
+- id: 1
+  role: verify
+  name: 查看运行中的服务单元
+  action:
+    type: shell
+    command: systemctl list-units --type=service --state=running
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出服务列表，sshd、NetworkManager 等关键服务为 running
+    - 2. 输出为空或不含关键服务
+    - 若有 failed 项需记录并排查
+    - '3. 输出 Active: active (running) 及最近日志，无 error 关键字'
+    - 4. 返回 enabled（或按预期返回 disabled）
+- id: 2
+  role: verify
+  name: 查看失败的服务
+  action:
+    type: shell
+    command: systemctl --failed
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出服务列表，sshd、NetworkManager 等关键服务为 running
+    - 2. 输出为空或不含关键服务
+    - 若有 failed 项需记录并排查
+    - '3. 输出 Active: active (running) 及最近日志，无 error 关键字'
+    - 4. 返回 enabled（或按预期返回 disabled）
+- id: 3
+  role: verify
+  name: 查看指定服务状态（如 sshd）
+  action:
+    type: shell
+    command: systemctl status sshd
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出服务列表，sshd、NetworkManager 等关键服务为 running
+    - 2. 输出为空或不含关键服务
+    - 若有 failed 项需记录并排查
+    - '3. 输出 Active: active (running) 及最近日志，无 error 关键字'
+    - 4. 返回 enabled（或按预期返回 disabled）
+- id: 4
+  role: verify
+  name: 查看服务是否开机自启
+  action:
+    type: shell
+    command: systemctl is-enabled sshd
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出服务列表，sshd、NetworkManager 等关键服务为 running
+    - 2. 输出为空或不含关键服务
+    - 若有 failed 项需记录并排查
+    - '3. 输出 Active: active (running) 及最近日志，无 error 关键字'
+    - 4. 返回 enabled（或按预期返回 disabled）

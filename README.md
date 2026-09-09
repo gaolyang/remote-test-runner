@@ -59,7 +59,9 @@ Playwright 的 Python 包和 Chromium 浏览器是两项独立安装。截图服
 
 ## 启动
 
-项目根目录执行：
+Windows 可直接双击项目根目录的 `start.bat`。黑色窗口会显示本机地址、局域网地址和实时运行日志；首次启动会自动创建虚拟环境并安装缺失依赖。自定义端口可运行 `start.bat 8001`。
+
+也可以在项目根目录执行：
 
 ```powershell
 .\run.ps1
@@ -85,7 +87,7 @@ python -m uvicorn backend.main:app --port 9000
 1. 确认控制机能通过 SSH 访问目标 Linux/FusionOS。
 2. 在网页选择 `TC_DEMO_001`，输入 IP、端口、用户名，以及密码或本机私钥路径。
 3. 点击 **Start Test**。密码仅在认证前保存在当前 Python 进程内存中，认证后立即清除，永远不会写入 YAML、日志、JSON 或截图元数据。
-4. xterm.js 会显示真实 Shell；自动步骤执行期间和结束前也支持键盘输入。
+4. xterm.js 会显示真实 Shell；自动步骤执行期间和结束前也支持键盘输入。带 `interaction` 的步骤会显示黄色操作栏，操作员在终端完成选择、输入或退出交互程序后，点击 **完成交互并继续**。
 5. `verify` 步骤完成且前端确认终端渲染后，Playwright 截取 `#evidence-area`。
 6. **Capture Evidence** 可随时补充 `stepNN_manual_XX.png`。
 7. 检测到 `rm -rf`、`mkfs`、写磁盘的 `dd`、`shutdown`、`reboot`、`poweroff`、`fdisk` 或 `parted` 时会暂停；只有点击 **Confirm Risk & Run** 后才执行。
@@ -132,6 +134,36 @@ steps:
 所有已配置规则都通过时 Step 才为 `PASS`。因此 `exit_code: 1` 与 `stdout_empty: true` 的组合可以是合法 PASS，不会把所有非零退出码强制判为失败。
 
 新增案例时复制示例、修改唯一 Case ID 和步骤，然后刷新页面。YAML 无效时案例列表会标为无效，API 会返回具体校验错误。
+
+一个测试功能可以直接包含任意多个 `steps`，执行器会保持同一 SSH 会话并严格按 YAML 顺序执行。需要人工操作的步骤示例：
+
+```yaml
+  - id: 2
+    role: verify
+    name: 交互式安装
+    action:
+      type: shell
+      command: ./install.sh
+    interaction:
+      mode: manual
+      instructions: 请按终端提示选择安装模式，程序结束后点击“完成交互并继续”。
+      timeout: 900
+    expected:
+      exit_code: 0
+```
+
+## Excel / CSV 导入
+
+启动页左侧可上传 `.xlsx`、`.xlsm` 或 `.csv`（最大 10 MB），系统会校验后在 `testcases/` 中生成 UTF-8 YAML。第一张工作表至少需要两列：
+
+| 必需列 | 说明 |
+|---|---|
+| 测试名称 | 相同名称的连续行会合并为同一个测试用例；合并单元格导致的空白名称会沿用上一行 |
+| 测试执行步骤 | 每行一个命令；一个单元格内也可用换行和 `1.`、`2.` 编号书写多个命令 |
+
+可选列包括 `测试编号`、`步骤名称`、`预期结果`、`步骤类型`、`是否交互` 和 `测试描述`。未提供测试编号时自动生成 `TC_IMPORT_001`；未提供步骤类型时使用 `verify`；未提供预期结果时默认 `exit_code: 0`。`预期结果` 可填写 `exit_code=1`，其余文本按分号或换行拆成 `stdout_contains`。同编号用例默认按最新 Excel 更新，旧 YAML 自动备份到 `testcases/.import-backups/`；取消勾选“同编号时更新”后，冲突会返回明确提示且不会写入任何文件。
+
+执行步骤也支持 `中文步骤说明：Shell 命令` 格式，例如 `查看内核版本：uname -a`。冒号左侧写入 YAML 的步骤名称，右侧才作为实际命令执行；命令内部的普通冒号和 URL 不会被拆分。
 
 ## Finish Marker 与渲染确认
 
@@ -186,7 +218,7 @@ python -m pytest -q
 
 - 单进程、内存会话；重启服务后不能恢复会话，不能使用多个 Uvicorn worker。
 - 同一时间每个 Session 只运行一个自动命令；没有多服务器并行与任务调度。
-- 交互式全屏程序、`sudo` 密码提示、重启恢复和自动输入密码尚未编排。
+- 交互步骤目前采用操作员终端接管与手工完成确认；尚未提供按提示正则自动应答、重启恢复或自动注入密码。
 - Shell Marker 方案面向常规 POSIX Shell；改变终端行规程、主动关闭 Shell 或输出同一随机 Marker 的命令可能导致该步 ERROR。
 - 截图服务为每次证据启动一个无头 Chromium，上量后应改为浏览器池。
 - 没有用户系统、权限模型、数据库、自动脱敏、PDF 报告或 AI 判断。

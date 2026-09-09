@@ -1,0 +1,61 @@
+version: '1.0'
+testcase:
+  id: TC_NETWORK_007
+  name: 查看路由表与默认网关
+  description: ''
+target:
+  connection:
+    type: ssh
+steps:
+- id: 1
+  role: verify
+  name: 查看主路由表
+  action:
+    type: shell
+    command: ip route
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出各网段路由条目，包含 via / dev / proto 字段，内容非空
+    - 2. 输出 default via <网关IP> dev <接口>，网关地址与规划一致
+    - 3. 输出 nameserver 记录，DNS 服务器地址正确
+    - 4. 4 个包全部收到回复，丢包率为 0%，延迟在合理范围
+- id: 2
+  role: verify
+  name: 查看默认网关
+  action:
+    type: shell
+    command: ip route show default
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出各网段路由条目，包含 via / dev / proto 字段，内容非空
+    - 2. 输出 default via <网关IP> dev <接口>，网关地址与规划一致
+    - 3. 输出 nameserver 记录，DNS 服务器地址正确
+    - 4. 4 个包全部收到回复，丢包率为 0%，延迟在合理范围
+- id: 3
+  role: verify
+  name: 查看 DNS 配置
+  action:
+    type: shell
+    command: cat /etc/resolv.conf
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出各网段路由条目，包含 via / dev / proto 字段，内容非空
+    - 2. 输出 default via <网关IP> dev <接口>，网关地址与规划一致
+    - 3. 输出 nameserver 记录，DNS 服务器地址正确
+    - 4. 4 个包全部收到回复，丢包率为 0%，延迟在合理范围
+- id: 4
+  role: verify
+  name: 测试到网关的连通性
+  action:
+    type: shell
+    command: ping -c 4 <网关IP>
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出各网段路由条目，包含 via / dev / proto 字段，内容非空
+    - 2. 输出 default via <网关IP> dev <接口>，网关地址与规划一致
+    - 3. 输出 nameserver 记录，DNS 服务器地址正确
+    - 4. 4 个包全部收到回复，丢包率为 0%，延迟在合理范围

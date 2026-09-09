@@ -1,0 +1,61 @@
+version: '1.0'
+testcase:
+  id: TC_SSH_019
+  name: SSH 远程登录与命令执行
+  description: ''
+target:
+  connection:
+    type: ssh
+steps:
+- id: 1
+  role: verify
+  name: 测试 SSH 端口连通性
+  action:
+    type: shell
+    command: nc -zv <目标IP> 22
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 提示 succeeded / Connected，端口可达
+    - 2. 免密或密码认证成功，返回目标主机名
+    - 3. 返回 NAME/VERSION 等字段，中文内容无乱码
+    - 4. 输出 OpenSSH 版本号，与服务端版本兼容
+- id: 2
+  role: verify
+  name: 远程执行单条命令
+  action:
+    type: shell
+    command: ssh user@<目标IP> 'hostname'
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 提示 succeeded / Connected，端口可达
+    - 2. 免密或密码认证成功，返回目标主机名
+    - 3. 返回 NAME/VERSION 等字段，中文内容无乱码
+    - 4. 输出 OpenSSH 版本号，与服务端版本兼容
+- id: 3
+  role: verify
+  name: 执行多条命令（含中文输出）
+  action:
+    type: shell
+    command: ssh user@<目标IP> 'cat /etc/os-release | head -3'
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 提示 succeeded / Connected，端口可达
+    - 2. 免密或密码认证成功，返回目标主机名
+    - 3. 返回 NAME/VERSION 等字段，中文内容无乱码
+    - 4. 输出 OpenSSH 版本号，与服务端版本兼容
+- id: 4
+  role: verify
+  name: 查看 SSH 服务版本
+  action:
+    type: shell
+    command: ssh -V
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 提示 succeeded / Connected，端口可达
+    - 2. 免密或密码认证成功，返回目标主机名
+    - 3. 返回 NAME/VERSION 等字段，中文内容无乱码
+    - 4. 输出 OpenSSH 版本号，与服务端版本兼容

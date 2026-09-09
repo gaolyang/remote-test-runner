@@ -98,6 +98,14 @@ async def confirm_command(session_id: str, step_id: str) -> dict[str, bool]:
     return {"confirmed": True}
 
 
+@router.post("/api/sessions/{session_id}/interaction/{step_id}/complete")
+async def complete_interaction(session_id: str, step_id: str) -> dict[str, bool]:
+    completed = require_session(session_id).complete_interaction(step_id)
+    if not completed:
+        raise HTTPException(status_code=409, detail="Step is not awaiting operator interaction")
+    return {"completed": True}
+
+
 @router.post("/api/sessions/{session_id}/capture")
 async def manual_capture(session_id: str) -> dict[str, str]:
     session = require_session(session_id)

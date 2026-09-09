@@ -1,61 +1,61 @@
-version: "1.0"
-
+version: '1.0'
 testcase:
   id: TC_SYSTEM_002
-  name: Linux系统基础状态检查
-  description: 检查主机名、当前时间、运行时长和登录用户，全程只读。
-
+  name: 查看内核版本与内核参数
+  description: ''
 target:
   connection:
     type: ssh
-
 steps:
-  - id: 1
-    role: setup
-    name: 确认当前用户
-    action:
-      type: shell
-      command: whoami
-    expected:
-      exit_code: 0
-    evidence:
-      capture: false
-
-  - id: 2
-    role: verify
-    name: 检查主机名
-    action:
-      type: shell
-      command: hostname
-    expected:
-      exit_code: 0
-      stdout_empty: false
-    evidence:
-      capture: true
-      trigger: command_complete
-
-  - id: 3
-    role: verify
-    name: 检查系统时间
-    action:
-      type: shell
-      command: date '+%F %T %Z'
-    expected:
-      exit_code: 0
-      stdout_empty: false
-    evidence:
-      capture: true
-      trigger: command_complete
-
-  - id: 4
-    role: verify
-    name: 检查系统运行时长
-    action:
-      type: shell
-      command: uptime
-    expected:
-      exit_code: 0
-    evidence:
-      capture: true
-      trigger: command_complete
-
+- id: 1
+  role: verify
+  name: 查看完整内核信息
+  action:
+    type: shell
+    command: uname -a
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出包含主机名、内核版本、编译时间、架构（如 x86_64 / aarch64）
+    - 2. 输出形如 5.x.x-xxx 的内核版本号，且与第 1 步中的版本一致
+    - 3. 输出 GCC 编译版本与内核版本，内容非空
+    - 4. 返回 fs.file-max 的具体数值，且大于 0
+- id: 2
+  role: verify
+  name: 仅查看内核发行版本号
+  action:
+    type: shell
+    command: uname -r
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出包含主机名、内核版本、编译时间、架构（如 x86_64 / aarch64）
+    - 2. 输出形如 5.x.x-xxx 的内核版本号，且与第 1 步中的版本一致
+    - 3. 输出 GCC 编译版本与内核版本，内容非空
+    - 4. 返回 fs.file-max 的具体数值，且大于 0
+- id: 3
+  role: verify
+  name: 查看内核编译信息
+  action:
+    type: shell
+    command: cat /proc/version
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出包含主机名、内核版本、编译时间、架构（如 x86_64 / aarch64）
+    - 2. 输出形如 5.x.x-xxx 的内核版本号，且与第 1 步中的版本一致
+    - 3. 输出 GCC 编译版本与内核版本，内容非空
+    - 4. 返回 fs.file-max 的具体数值，且大于 0
+- id: 4
+  role: verify
+  name: 查看内核关键参数（如文件句柄上限）
+  action:
+    type: shell
+    command: sysctl fs.file-max
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出包含主机名、内核版本、编译时间、架构（如 x86_64 / aarch64）
+    - 2. 输出形如 5.x.x-xxx 的内核版本号，且与第 1 步中的版本一致
+    - 3. 输出 GCC 编译版本与内核版本，内容非空
+    - 4. 返回 fs.file-max 的具体数值，且大于 0

@@ -101,9 +101,36 @@ class ExecutionEngine:
                     f"STEP {step.id} START",
                     f"Name:\n{step.name}\n\nCommand:\n{step.action.command}",
                 )
-                raw_stdout, exit_code = await ssh.run_command(
-                    step.action.command, self.settings.command_timeout
-                )
+                if step.interaction is not None:
+                    interaction_done = asyncio.Event()
+                    session.interaction_confirmations[str(step.id)] = interaction_done
+                    result["status"] = StepStatus.WAITING_FOR_OPERATOR.value
+                    session.message = step.interaction.instructions
+                    await session.publish(
+                        "interaction_required",
+                        step_id=str(step.id),
+                        instructions=step.interaction.instructions,
+                        state=session.snapshot(include_transcript=False),
+                    )
+                    command_task = asyncio.create_task(
+                        ssh.run_command(step.action.command, step.interaction.timeout)
+                    )
+                    try:
+                        await self._wait_for_confirmation_or_abort(
+                            session, interaction_done, timeout=step.interaction.timeout
+                        )
+                        result["status"] = StepStatus.RUNNING.value
+                        session.message = "操作员已完成交互，等待命令结束"
+                        await session.publish("interaction_completed", state=session.snapshot(include_transcript=False))
+                        raw_stdout, exit_code = await command_task
+                    finally:
+                        session.interaction_confirmations.pop(str(step.id), None)
+                        if not command_task.done():
+                            command_task.cancel()
+                else:
+                    raw_stdout, exit_code = await ssh.run_command(
+                        step.action.command, self.settings.command_timeout
+                    )
                 stdout = clean_command_output(raw_stdout)
                 evaluation = evaluate(step.expected, exit_code, stdout)
                 result.update(
@@ -188,15 +215,17 @@ class ExecutionEngine:
             await session.publish("session_finished", state=session.snapshot(include_transcript=False))
 
     async def _wait_for_confirmation_or_abort(
-        self, session: RuntimeSession, confirmation: asyncio.Event
+        self, session: RuntimeSession, confirmation: asyncio.Event, timeout: float | None = None
     ) -> None:
         confirm_task = asyncio.create_task(confirmation.wait())
         abort_task = asyncio.create_task(session.abort_event.wait())
         done, pending = await asyncio.wait(
-            {confirm_task, abort_task}, return_when=asyncio.FIRST_COMPLETED
+            {confirm_task, abort_task}, timeout=timeout, return_when=asyncio.FIRST_COMPLETED
         )
         for task in pending:
             task.cancel()
+        if not done:
+            raise TimeoutError("Timed out while awaiting operator interaction")
         if abort_task in done:
             raise asyncio.CancelledError("Test aborted while awaiting confirmation")
 

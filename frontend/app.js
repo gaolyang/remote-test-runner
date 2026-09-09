@@ -8,6 +8,7 @@
   let socket = null;
   let currentState = null;
   let pendingRiskStep = null;
+  let pendingInteractionStep = null;
 
   function expectedText(expected) {
     if (!expected) return "—";
@@ -43,14 +44,19 @@
     byId("evidence-expected").textContent = step ? expectedText(step.expected) : "—";
     byId("evidence-result").textContent = latest ? latest.status : state.status;
     byId("evidence-result").dataset.status = latest ? latest.status : state.status;
+    if (step && step.interaction && latest && latest.status === "WAITING_FOR_OPERATOR") {
+      pendingInteractionStep = String(step.id);
+      byId("interaction-message").textContent = step.interaction.instructions;
+      byId("interaction-bar").classList.remove("hidden");
+      byId("interaction-button").disabled = false;
+    }
 
     const list = byId("step-list");
     list.replaceChildren();
     for (const item of state.steps || []) {
       const li = document.createElement("li");
       li.dataset.status = item.status;
-      const icon = item.status === "PASS" ? "✓" : item.status === "RUNNING" ? "▶" : item.status === "PENDING" ? "○" : "!";
-      li.textContent = `${icon} Step ${item.id} · ${item.name}`;
+      li.textContent = `Step ${item.id} · ${item.name}`;
       list.appendChild(li);
     }
   }
@@ -66,7 +72,7 @@
   }
 
   async function loadCases() {
-    const cases = await api("/api/cases");
+    const cases = await api("/api/cases", { cache: "no-store" });
     const select = byId("testcase");
     select.replaceChildren();
     for (const item of cases) {
@@ -77,6 +83,38 @@
       select.appendChild(option);
     }
     if (!cases.some((item) => item.valid)) byId("form-error").textContent = "testcases 目录中没有有效案例。";
+  }
+
+  async function importCases() {
+    const input = byId("case-file");
+    const file = input.files && input.files[0];
+    if (!file) {
+      byId("import-message").textContent = "请先选择 .xlsx、.xlsm 或 .csv 文件。";
+      return;
+    }
+    const button = byId("import-button");
+    const form = new FormData();
+    form.append("file", file);
+    form.append("overwrite", byId("overwrite-cases").checked ? "true" : "false");
+    button.disabled = true;
+    byId("import-message").dataset.kind = "working";
+    byId("import-message").textContent = "正在解析并生成 YAML…";
+    try {
+      const result = await api("/api/cases/import", { method: "POST", body: form });
+      const stepCount = result.cases.reduce((sum, item) => sum + item.step_count, 0);
+      const updateText = result.updated ? `，更新 ${result.updated} 个（原文件已备份）` : "";
+      byId("import-message").dataset.kind = "success";
+      byId("import-message").textContent = `导入成功：${result.imported} 个用例、${stepCount} 个步骤${updateText}。`;
+      await loadCases();
+      const first = result.cases[0];
+      if (first) byId("testcase").value = first.filename;
+      input.value = "";
+    } catch (error) {
+      byId("import-message").dataset.kind = "error";
+      byId("import-message").textContent = error.message;
+    } finally {
+      button.disabled = false;
+    }
   }
 
   function connectWebSocket() {
@@ -103,6 +141,17 @@
         pendingRiskStep = message.step_id;
         byId("confirm-button").disabled = false;
         byId("action-message").textContent = `高危命令：${message.risks.join(", ")}。请人工确认。`;
+      }
+      if (message.type === "interaction_required") {
+        pendingInteractionStep = message.step_id;
+        byId("interaction-message").textContent = message.instructions || "请在终端中完成交互。";
+        byId("interaction-bar").classList.remove("hidden");
+        byId("interaction-button").disabled = false;
+        window.RTRTerminal.focus();
+      }
+      if (message.type === "interaction_completed") {
+        pendingInteractionStep = null;
+        byId("interaction-bar").classList.add("hidden");
       }
       if (message.type === "step_complete" && message.capture_requested) {
         await window.RTRTerminal.rendered();
@@ -162,6 +211,7 @@
   );
 
   byId("start-form").addEventListener("submit", start);
+  byId("import-button").addEventListener("click", importCases);
   byId("capture-button").addEventListener("click", async () => {
     try {
       byId("action-message").textContent = "正在截图…";
@@ -177,6 +227,20 @@
       byId("confirm-button").disabled = true;
       byId("action-message").textContent = "已确认，继续执行。";
     } catch (error) { byId("action-message").textContent = error.message; }
+  });
+  byId("interaction-button").addEventListener("click", async () => {
+    if (!pendingInteractionStep) return;
+    const stepId = pendingInteractionStep;
+    byId("interaction-button").disabled = true;
+    try {
+      await api(`/api/sessions/${sessionId}/interaction/${encodeURIComponent(stepId)}/complete`, { method: "POST" });
+      pendingInteractionStep = null;
+      byId("interaction-bar").classList.add("hidden");
+      byId("action-message").textContent = "交互已确认，继续执行。";
+    } catch (error) {
+      byId("interaction-button").disabled = false;
+      byId("action-message").textContent = error.message;
+    }
   });
   byId("abort-button").addEventListener("click", async () => {
     if (!window.confirm("确定终止当前测试？")) return;

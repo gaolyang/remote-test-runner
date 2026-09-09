@@ -1,0 +1,61 @@
+version: '1.0'
+testcase:
+  id: TC_PKG_016
+  name: 查看已安装软件包与软件源
+  description: ''
+target:
+  connection:
+    type: ssh
+steps:
+- id: 1
+  role: verify
+  name: 查看已配置的软件仓库
+  action:
+    type: shell
+    command: dnf repolist
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 repo id 与 repo name 列表，状态为 enabled
+    - 2. 输出包名-版本-发行号，说明该包已安装
+    - 3. 输出可更新列表或提示无更新，exit code 为 0 或 100（均为正常）
+    - 4. 输出 Name / Version / Release / Install Date 等字段，信息完整
+- id: 2
+  role: verify
+  name: 查询指定包是否安装
+  action:
+    type: shell
+    command: rpm -q openssh-server
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 repo id 与 repo name 列表，状态为 enabled
+    - 2. 输出包名-版本-发行号，说明该包已安装
+    - 3. 输出可更新列表或提示无更新，exit code 为 0 或 100（均为正常）
+    - 4. 输出 Name / Version / Release / Install Date 等字段，信息完整
+- id: 3
+  role: verify
+  name: 列出可更新的软件包
+  action:
+    type: shell
+    command: dnf check-update（只读）
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 repo id 与 repo name 列表，状态为 enabled
+    - 2. 输出包名-版本-发行号，说明该包已安装
+    - 3. 输出可更新列表或提示无更新，exit code 为 0 或 100（均为正常）
+    - 4. 输出 Name / Version / Release / Install Date 等字段，信息完整
+- id: 4
+  role: verify
+  name: 查看包详细信息
+  action:
+    type: shell
+    command: rpm -qi openssh-server
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 repo id 与 repo name 列表，状态为 enabled
+    - 2. 输出包名-版本-发行号，说明该包已安装
+    - 3. 输出可更新列表或提示无更新，exit code 为 0 或 100（均为正常）
+    - 4. 输出 Name / Version / Release / Install Date 等字段，信息完整

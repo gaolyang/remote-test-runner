@@ -1,0 +1,65 @@
+version: '1.0'
+testcase:
+  id: TC_RESOURCE_010
+  name: 查看内存与 Swap 使用情况
+  description: ''
+target:
+  connection:
+    type: ssh
+steps:
+- id: 1
+  role: verify
+  name: 查看内存概况
+  action:
+    type: shell
+    command: free -h
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 Mem / Swap 的 total、used、free、available，数据非空
+    - 2. 输出 MemTotal / MemFree / MemAvailable 等字段，数值与 free 一致
+    - 3. 输出 Swap 设备名称与大小
+    - 未配置时输出为空，属预期
+    - 4. 输出内存占用前 5 的进程，%MEM 递减排列，无异常进程长期占用
+- id: 2
+  role: verify
+  name: 查看内存详细指标
+  action:
+    type: shell
+    command: cat /proc/meminfo
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 Mem / Swap 的 total、used、free、available，数据非空
+    - 2. 输出 MemTotal / MemFree / MemAvailable 等字段，数值与 free 一致
+    - 3. 输出 Swap 设备名称与大小
+    - 未配置时输出为空，属预期
+    - 4. 输出内存占用前 5 的进程，%MEM 递减排列，无异常进程长期占用
+- id: 3
+  role: verify
+  name: 查看 Swap 分区
+  action:
+    type: shell
+    command: swapon --show
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 Mem / Swap 的 total、used、free、available，数据非空
+    - 2. 输出 MemTotal / MemFree / MemAvailable 等字段，数值与 free 一致
+    - 3. 输出 Swap 设备名称与大小
+    - 未配置时输出为空，属预期
+    - 4. 输出内存占用前 5 的进程，%MEM 递减排列，无异常进程长期占用
+- id: 4
+  role: verify
+  name: 查看占用内存最高的进程
+  action:
+    type: shell
+    command: ps aux --sort=-%mem | head -5
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 Mem / Swap 的 total、used、free、available，数据非空
+    - 2. 输出 MemTotal / MemFree / MemAvailable 等字段，数值与 free 一致
+    - 3. 输出 Swap 设备名称与大小
+    - 未配置时输出为空，属预期
+    - 4. 输出内存占用前 5 的进程，%MEM 递减排列，无异常进程长期占用

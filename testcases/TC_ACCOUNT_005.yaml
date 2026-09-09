@@ -1,0 +1,61 @@
+version: '1.0'
+testcase:
+  id: TC_ACCOUNT_005
+  name: 查看当前用户与登录会话
+  description: ''
+target:
+  connection:
+    type: ssh
+steps:
+- id: 1
+  role: verify
+  name: 查看当前登录用户名
+  action:
+    type: shell
+    command: whoami
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 返回当前用户名（如 root 或测试账号），
+    - 2. 输出 uid / gid / groups 字段，UID 与预期账号一致
+    - 3. 输出至少一个会话，包含用户名、终端、来源 IP 与登录时间
+    - 4. 输出最近 5 条登录记录，时间与来源 IP 合理，无异常登录
+- id: 2
+  role: verify
+  name: 查看用户 UID/GID 与所属组
+  action:
+    type: shell
+    command: id
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 返回当前用户名（如 root 或测试账号），
+    - 2. 输出 uid / gid / groups 字段，UID 与预期账号一致
+    - 3. 输出至少一个会话，包含用户名、终端、来源 IP 与登录时间
+    - 4. 输出最近 5 条登录记录，时间与来源 IP 合理，无异常登录
+- id: 3
+  role: verify
+  name: 查看当前在线会话
+  action:
+    type: shell
+    command: who
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 返回当前用户名（如 root 或测试账号），
+    - 2. 输出 uid / gid / groups 字段，UID 与预期账号一致
+    - 3. 输出至少一个会话，包含用户名、终端、来源 IP 与登录时间
+    - 4. 输出最近 5 条登录记录，时间与来源 IP 合理，无异常登录
+- id: 4
+  role: verify
+  name: 查看最近登录记录
+  action:
+    type: shell
+    command: last -n 5
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 返回当前用户名（如 root 或测试账号），
+    - 2. 输出 uid / gid / groups 字段，UID 与预期账号一致
+    - 3. 输出至少一个会话，包含用户名、终端、来源 IP 与登录时间
+    - 4. 输出最近 5 条登录记录，时间与来源 IP 合理，无异常登录

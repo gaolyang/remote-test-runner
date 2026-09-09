@@ -1,0 +1,65 @@
+version: '1.0'
+testcase:
+  id: TC_RESOURCE_009
+  name: 查看磁盘与文件系统使用率
+  description: ''
+target:
+  connection:
+    type: ssh
+steps:
+- id: 1
+  role: verify
+  name: 查看各挂载点使用率
+  action:
+    type: shell
+    command: df -hT
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 Filesystem / Type / Size / Used / Avail / Use% / Mounted on，根分区使用率低于告警阈值（如
+      85%）
+    - 2. 输出 IUse% 字段，inode 使用率未达 100%
+    - 3. 输出该目录总大小，数值合理且命令无报错
+    - 4. 输出对应文件系统的挂载记录，挂载选项（rw）正确
+- id: 2
+  role: verify
+  name: 查看 inode 使用情况
+  action:
+    type: shell
+    command: df -i
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 Filesystem / Type / Size / Used / Avail / Use% / Mounted on，根分区使用率低于告警阈值（如
+      85%）
+    - 2. 输出 IUse% 字段，inode 使用率未达 100%
+    - 3. 输出该目录总大小，数值合理且命令无报错
+    - 4. 输出对应文件系统的挂载记录，挂载选项（rw）正确
+- id: 3
+  role: verify
+  name: 查看指定目录占用
+  action:
+    type: shell
+    command: du -sh /var
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 Filesystem / Type / Size / Used / Avail / Use% / Mounted on，根分区使用率低于告警阈值（如
+      85%）
+    - 2. 输出 IUse% 字段，inode 使用率未达 100%
+    - 3. 输出该目录总大小，数值合理且命令无报错
+    - 4. 输出对应文件系统的挂载记录，挂载选项（rw）正确
+- id: 4
+  role: verify
+  name: 查看挂载信息
+  action:
+    type: shell
+    command: mount | grep -E 'ext4|xfs'
+  expected:
+    exit_code: 0
+    stdout_contains:
+    - 1. 输出 Filesystem / Type / Size / Used / Avail / Use% / Mounted on，根分区使用率低于告警阈值（如
+      85%）
+    - 2. 输出 IUse% 字段，inode 使用率未达 100%
+    - 3. 输出该目录总大小，数值合理且命令无报错
+    - 4. 输出对应文件系统的挂载记录，挂载选项（rw）正确
